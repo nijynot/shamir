@@ -1,6 +1,4 @@
 global.crypto = require('crypto');
-const fs = require('fs');
-const int = require('big-integer');
 const Decimal = require('decimal.js');
 Decimal.set({ modulo: Decimal.ROUND_FLOOR });
 Decimal.set({ crypto: true });
