@@ -2,13 +2,19 @@ global.crypto = require('crypto');
 const fs = require('fs');
 const int = require('big-integer');
 const Decimal = require('decimal.js');
-Decimal.set({ modulo: Decimal.ROUND_FLOOR });
+Decimal.set({ modulo: Decimal.EUCLID });
 Decimal.set({ crypto: true });
-Decimal.set({ precision: 1000000 });
-Decimal.set({ toExpPos: 90000000000000 });
+Decimal.set({ precision: 1e+6 });
+Decimal.set({ toExpPos: 1000 });
 
 const exampleKey = '0xe9873d79c6d87dc0fb6a5778633389f4453213303da61f20bd67fc233aa33262';
-const mersenne = Decimal(2**512 - 1);
+
+// Sufficient prime for most uses. Pick a larger prime from
+// https://en.wikipedia.org/wiki/Largest_known_prime_number
+// if your secret is large.
+const prime512 = Decimal('2').pow(3217).sub(1);
+const prime3217 = Decimal('2').pow(3217).sub(1);
+const prime19937 = Decimal('2').pow(19937).sub(1);
 
 function random(lower, upper) {
   if (lower > upper) {
@@ -20,6 +26,7 @@ function random(lower, upper) {
   return lower.add(Decimal.random().times(upper.sub(lower + 1)).floor());
 }
 
+// Polynomial function where `a` is the coefficients
 function q(x, { a }) {
   let value = a[0];
   for (let i = 1; i < a.length; i++) {
@@ -30,13 +37,47 @@ function q(x, { a }) {
 }
 
 function split(secret, n, k, prime) {
+  if (Number.isInteger(secret) || Number.isInteger(prime)) {
+    throw new TypeError(
+      'The shamir.split() function must be called with a String<secret>' +
+      'but got Number<secret>.'
+    );
+  }
+
+  if (Number.isInteger(prime)) {
+    throw new TypeError(
+      'The shamir.split() function must be called with a String<prime>' +
+      'but got Number<prime>.'
+    );
+  }
+
+  if (secret.substring(0, 2) !== '0x') {
+    throw new TypeError(
+      'The shamir.split() function must be called with a' +
+      'String<secret> in hexadecimals that begins with 0x.'
+    );
+  }
+
+  if (!Decimal.isDecimal(prime) && prime.substring(0, 2) !== '0x') {
+    throw new TypeError(
+      'The shamir.split() function must be called with a' +
+      'String<prime> in hexadecimals that begins with 0x.'
+    );
+  }
+
   const S = Decimal(secret);
   const p = Decimal(prime);
+
+  if (S.greaterThan(prime)) {
+    throw new RangeError('The String<secret> must be less than the String<prime>.');
+  }
+
   let a = [S];
   let D = [];
 
   for (let i = 1; i < k; i++) {
-    a.push(random(Decimal(0), p.sub(1)));
+    let coeff = random(Decimal(0), p.sub(1));
+    a.push(coeff);
   }
 
   for (let i = 0; i < n; i++) {
@@ -101,6 +142,8 @@ function combine(shares, prime) {
 }
 
 exports.exampleKey = exampleKey;
-exports.mersenne = mersenne;
+exports.prime512 = prime512;
+exports.prime3217 = prime3217;
+exports.prime19937 = prime19937;
 exports.split = split;
 exports.combine = combine;
