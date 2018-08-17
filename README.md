@@ -12,6 +12,7 @@ const example = '0xe9873d79c6d87dc0fb6a5778633389f4453213303da61f20bd67fc233aa33
 const shares = shamir.split(example, 6, 3, shamir.prime512);
 // => [{ x: 1, y: 0x... }, { x: 2, y: 0x... }, ... ,{ x: 6, y: 0x... }]
 
+// Split the secret into 6 shares such that at least 3 shares are required to reconstruct the secret
 const secret = shamir.combine([shares[0], shares[1], shares[2]], shamir.prime512).toHex();
 // => 0xe9873d79c6d87dc0fb6a5778633389f4453213303da61f20bd67fc233aa33262
 ```
@@ -44,7 +45,7 @@ A prime number. Must be greater than `secret`.
 ##### `shares`
 Type: `Array`
 
-Array of your shares, where each share is an `Object` with corresponding `x` and `y` values generated from ``shamir.split.
+Array of your shares, where each share is an `Object` with the corresponding `x` and `y` values generated from `shamir.split`.
 
 ##### `prime`
 Type: `String` or `Number`
