@@ -10,7 +10,7 @@ const exampleKey = '0xe9873d79c6d87dc0fb6a5778633389f4453213303da61f20bd67fc233a
 // Sufficient prime for most uses. Pick a larger prime from
 // https://en.wikipedia.org/wiki/Largest_known_prime_number
 // if your secret is large.
-const prime512 = Decimal('2').pow(3217).sub(1);
+const prime512 = Decimal('2').pow(512).sub(1);
 const prime3217 = Decimal('2').pow(3217).sub(1);
 const prime19937 = Decimal('2').pow(19937).sub(1);
 
