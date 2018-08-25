@@ -1,8 +1,9 @@
 global.crypto = require('crypto');
 const Decimal = require('decimal.js');
-Decimal.set({ modulo: Decimal.EUCLID });
+Decimal.set({ rounding: 5 });
+Decimal.set({ modulo: Decimal.ROUND_FLOOR });
 Decimal.set({ crypto: true });
-Decimal.set({ precision: 1e+6 });
+Decimal.set({ precision: 1e+4 });
 Decimal.set({ toExpPos: 1000 });
 
 const exampleKey = '0xe9873d79c6d87dc0fb6a5778633389f4453213303da61f20bd67fc233aa33262';
@@ -13,6 +14,25 @@ const exampleKey = '0xe9873d79c6d87dc0fb6a5778633389f4453213303da61f20bd67fc233a
 const prime512 = Decimal('2').pow(512).sub(1);
 const prime3217 = Decimal('2').pow(3217).sub(1);
 const prime19937 = Decimal('2').pow(19937).sub(1);
+
+function divmod(a, b, n) {
+  let aCopy = (Decimal.isDecimal(a)) ? a : Decimal(a);
+  let bCopy = (Decimal.isDecimal(b)) ? b : Decimal(b);
+  let nCopy = (Decimal.isDecimal(n)) ? n : Decimal(n);
+  let t = Decimal('0');
+  let nt = Decimal('1');
+  let r = nCopy;
+  let nr = bCopy.mod(n);
+  let tmp;
+  while (!nr.isZero()) {
+    let quot = Decimal.floor(r.div(nr));
+    tmp = nt;  nt = t.sub(quot.times(nt));  t = tmp;
+    tmp = nr;  nr = r.sub(quot.times(nr));  r = tmp;
+  };
+  if (r.greaterThan(1)) return Decimal(0);
+  if (t.isNegative()) t = t.add(n);
+  return aCopy.times(t).mod(n);
+}
 
 function random(lower, upper) {
   if (lower > upper) {
@@ -74,7 +94,7 @@ function split(secret, n, k, prime) {
   let D = [];
 
   for (let i = 1; i < k; i++) {
-    let coeff = random(Decimal(0), p.sub(1));
+    let coeff = random(Decimal(0), p.sub(0x1));
     a.push(coeff);
   }
 
@@ -113,18 +133,20 @@ function lagrangeBasis(data, j) {
   return {
     numerator,
     denominator,
-    fraction: numerator.div(denominator),
   };
 }
 
 function lagrangeInterpolate(data, p) {
   let S = Decimal(0);
+
   for (let i = 0; i < data.length; i++) {
     let basis = lagrangeBasis(data, i);
-    S = S.add(data[i].y.times(basis.numerator).div(basis.denominator));
+    S = S.add(data[i].y.times(divmod(basis.numerator, basis.denominator, p)));
   }
 
-  return S.mod(p);
+  const rest = S.mod(p);
+
+  return rest;
 }
 
 function combine(shares, prime) {
@@ -145,3 +167,4 @@ exports.prime3217 = prime3217;
 exports.prime19937 = prime19937;
 exports.split = split;
 exports.combine = combine;
+exports.divmod = divmod;
