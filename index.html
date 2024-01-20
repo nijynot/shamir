@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shamir's Secret Sharing</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/decimal.js/10.2.1/decimal.min.js"></script>
+    <script src="index.js"></script>
+    <script src="form.js"></script>
+    <script>
+        function copyToClipboard(elementId) {
+            var copyText = document.getElementById(elementId);
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); // For mobile devices
+            document.execCommand("copy");
+            alert("Copied the text: " + copyText.value);
+        }
+        </script>
+    <style>
+        /* Add this CSS */
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 33.33%;
+            text-align: center;
+        }
+
+        input[type="text"], input[type="number"], textarea {
+            width: 100%;
+            height: 2em;
+        }
+        textarea {
+        min-height: 100px;
+    }
+    </style>
+
+</head>
+<body>
+    <form id="shamirForm">
+        <label for="secret" >Secret:</label><br>
+        <input type="text" id="secret" name="secret" value="0xe9873d79c6d87dc0fb6a5778633389f4453213303da61f20bd67fc233aa33262"><br>
+        <label for="n">Number of shares:</label><br>
+        <input type="number" id="n" name="n" value="5"><br>
+        <label for="k">Minimum shares to reconstruct:</label><br>
+        <input type="number" id="k" name="k" value="3"><br>
+        <label for="prime" >Prime:</label><br>
+        <input type="text" id="prime" name="prime" value="3217"><br>
+        <input type="submit" value="Split">
+    </form>
+    <h2>Shares:</h2>
+    <textarea id="shares" readonly></textarea>
+    <button onclick="recombineShares()">Recombine</button>
+    <button onclick="copyToClipboard('shares')">Copy to clipboard</button>
+
+    <h2>Recombined Secret:</h2>
+    <textarea id="recombined" readonly></textarea>
+    <button onclick="copyToClipboard('recombined')">Copy to clipboard</button>
+
+
+    <p id="comparison"></p>
+</body>
+</html>
