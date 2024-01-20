@@ -1,5 +1,16 @@
-global.crypto = require('crypto');
-const Decimal = require('decimal.js');
+let crypto;
+let Decimal;
+
+if (typeof window === 'undefined') {
+  // We are in a Node.js environment
+  crypto = require('crypto');
+  Decimal = require('decimal.js');
+} else {
+  // We are in a browser environment
+  crypto = window.crypto;
+  Decimal = window.Decimal;
+}
+
 Decimal.set({ rounding: 5 });
 Decimal.set({ modulo: Decimal.ROUND_FLOOR });
 Decimal.set({ crypto: true });
@@ -152,6 +163,14 @@ function combine(shares, prime) {
   return lagrangeInterpolate(decimalShares, p);
 }
 
-exports.split = split;
-exports.combine = combine;
-exports.divmod = divmod;
+if (typeof module !== 'undefined' && module.exports) {
+  // We are in a Node.js environment
+  exports.split = split;
+  exports.combine = combine;
+  exports.divmod = divmod;
+} else {
+  // We are in a browser environment
+  window.split = split;
+  window.combine = combine;
+  window.divmod = divmod;
+}
